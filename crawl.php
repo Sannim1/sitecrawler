@@ -24,27 +24,13 @@ $htmlParser = new SiteCrawler\HtmlParser(
 );
 
 $scraper = new SiteCrawler\Scraper($httpClient, $htmlParser);
+$mapMaker = new SiteCrawler\MapMaker($url);
 
-$crawler = new SiteCrawler\Crawler($url, $scraper);
+$crawler = new SiteCrawler\Crawler($url, $scraper, $mapMaker);
 
 $visitedUrls = $crawler->start();
 
-$siteMap = (new SiteCrawler\Renderers\SiteMapRenderer)->render($visitedUrls);
-$assetMap = (new SiteCrawler\Renderers\AssetMapRenderer)->render($visitedUrls);
-
-$outputDirectory = getcwd() . "/sitemaps/" . str_replace("/", "", $url->getUrl());
-if (! is_dir($outputDirectory)) {
-    mkdir($outputDirectory, 0777, true);
-}
-$siteMapFileName = "{$outputDirectory}/sitemap.json";
-$assetMapFileName = "{$outputDirectory}/assetmap.json";
-
-file_put_contents($siteMapFileName, json_encode($siteMap));
-file_put_contents($assetMapFileName, json_encode($assetMap));
-
-echo "DONE!!!" . PHP_EOL;
-echo "Sitemap can be found at: {$siteMapFileName}" . PHP_EOL;
-echo "Asset map can be found at: {$assetMapFileName}" . PHP_EOL;
+$mapMaker->createMap($visitedUrls);
 
 $duration = time() - $startTime;
 echo "Duration: {$duration} seconds";

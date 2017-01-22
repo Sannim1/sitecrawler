@@ -1,6 +1,7 @@
 <?php
 
 use SiteCrawler\Crawler;
+use SiteCrawler\MapMaker;
 use SiteCrawler\Scraper;
 use SiteCrawler\Url;
 
@@ -20,7 +21,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
     {
         $rootUrl = new Url("http://example.com");
 
-        $crawler = new Crawler($rootUrl, $this->mockScraper);
+        $crawler = new Crawler($rootUrl, $this->mockScraper, new MapMaker($this->mockUrl));
         $this->mockScraper->expects($this->once())
             ->method('scrape')
             ->with($crawler, $rootUrl)
@@ -34,7 +35,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
      */
     public function it_adds_a_supplied_url_to_the_queue_of_links_to_be_crawled()
     {
-        $crawler = new Crawler($this->mockUrl, $this->mockScraper);
+        $crawler = new Crawler($this->mockUrl, $this->mockScraper, new MapMaker($this->mockUrl));
 
         $this->mockUrl->expects($this->once())
             ->method('getUrl')
@@ -48,7 +49,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
      */
     public function it_adds_a_supplied_url_to_the_list_of_visited_urls()
     {
-        $crawler = new Crawler($this->mockUrl, $this->mockScraper);
+        $crawler = new Crawler($this->mockUrl, $this->mockScraper, new MapMaker($this->mockUrl));
 
         $this->mockUrl->expects($this->once())
             ->method('getUrl')
@@ -65,7 +66,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
         $rootUrl = new Url("http://example.com");
         $urlToVisit = new Url("http://example.com/about");
 
-        $crawler = new Crawler($rootUrl, $this->mockScraper);
+        $crawler = new Crawler($rootUrl, $this->mockScraper, new MapMaker($this->mockUrl));
         $this->mockScraper->expects($this->once())
             ->method('linksToHtmlPage')
             ->willReturn(true);
@@ -81,7 +82,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
         $rootUrl = new Url("http://example.com");
         $urlToVisit = new Url("http://not.example.com");
 
-        $crawler = new Crawler($rootUrl, $this->mockScraper);
+        $crawler = new Crawler($rootUrl, $this->mockScraper, new MapMaker($this->mockUrl));
 
         $this->assertFalse($crawler->shouldVisit($urlToVisit));
     }
@@ -94,7 +95,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
         $rootUrl = new Url("http://example.com");
         $urlToVisit = new Url("http://example.com/about");
 
-        $crawler = new Crawler($rootUrl, $this->mockScraper);
+        $crawler = new Crawler($rootUrl, $this->mockScraper, new MapMaker($this->mockUrl));
         $crawler->markVisited($urlToVisit);
 
         $this->assertFalse($crawler->shouldVisit($urlToVisit));
@@ -108,7 +109,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
         $rootUrl = new Url("http://example.com");
         $urlToVisit = new Url("ftp://example.com");
 
-        $crawler = new Crawler($rootUrl, $this->mockScraper);
+        $crawler = new Crawler($rootUrl, $this->mockScraper, new MapMaker($this->mockUrl));
 
         $this->assertFalse($crawler->shouldVisit($urlToVisit));
     }
@@ -121,7 +122,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase
         $rootUrl = new Url("http://example.com");
         $urlToVisit = new Url("http://example.com/document.pdf");
 
-        $crawler = new Crawler($rootUrl, $this->mockScraper);
+        $crawler = new Crawler($rootUrl, $this->mockScraper, new MapMaker($this->mockUrl));
 
         $this->mockScraper->expects($this->once())
             ->method('linksToHtmlPage')
