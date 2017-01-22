@@ -5,7 +5,7 @@ namespace SiteCrawler;
 use SiteCrawler\Factories\DOMFactory;
 use SiteCrawler\Factories\UrlFactory;
 use SiteCrawler\Url;
-use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\DomCrawler\Crawler as DOMCrawler;
 
 class HtmlParser
 {
@@ -23,7 +23,7 @@ class HtmlParser
         return $this->domFactory->makeDOMCrawler($pageUrl, $html);
     }
 
-    public function getLinks(Crawler $domCrawler)
+    public function getLinks(DOMCrawler $domCrawler)
     {
         $links = $domCrawler->filter("a")->links();
         array_walk($links, function (&$link) {
@@ -32,7 +32,7 @@ class HtmlParser
         return $links;
     }
 
-    public function getImages(Crawler $domCrawler)
+    public function getImages(DOMCrawler $domCrawler)
     {
         $images = $domCrawler->filter("img")->images();
         array_walk($images, function (&$image) {
@@ -41,7 +41,7 @@ class HtmlParser
         return $images;
     }
 
-    public function getIcons(Crawler $domCrawler)
+    public function getIcons(DOMCrawler $domCrawler)
     {
         $icons = $domCrawler->filter("link[rel=icon]")->links();
         $icons = array_merge($icons, $domCrawler->filter("link[rel=apple-touch-icon]")->links());
@@ -54,7 +54,7 @@ class HtmlParser
         return $icons;
     }
 
-    public function getStyleSheets(Crawler $domCrawler)
+    public function getStyleSheets(DOMCrawler $domCrawler)
     {
         $styleSheets = $domCrawler->filter("link[rel=stylesheet]")->links();
         array_walk($styleSheets, function (&$sheet) {
@@ -63,7 +63,7 @@ class HtmlParser
         return $styleSheets;
     }
 
-    public function getScripts(Crawler $domCrawler)
+    public function getScripts(DOMCrawler $domCrawler)
     {
         $scripts = [];
         $scriptTags = $domCrawler->filter("script");
@@ -79,7 +79,7 @@ class HtmlParser
         return $scripts;
     }
 
-    public function getAssets(Crawler $domCrawler)
+    public function getAssets(DOMCrawler $domCrawler)
     {
         return array_merge(
             $this->getImages($domCrawler),

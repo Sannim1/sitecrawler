@@ -1,14 +1,13 @@
 <?php
 namespace SiteCrawler;
 
-use GuzzleHttp\Client;
-use SiteCrawler\HtmlParser;
+use SiteCrawler\Scraper;
 use SiteCrawler\Url;
 
 class Crawler
 {
     /**
-     * an array of URLs that are yet to be crawled
+     * an array of URLs that are yet to be visited
      * @var array
      */
     protected $urlsToVisit;
@@ -26,24 +25,23 @@ class Crawler
     protected $rootUrl;
 
     /**
-     * the client used by this crawler object for making HTTP requests
-     * @var GuzzleHttp\Client
+     * object for visiting URLs in order to collect link and asset information
+     *
+     * @var SiteCrawler\Scraper
      */
-    protected $httpClient;
+    protected $scraper;
 
-    /**
-     * object for parsing html
-     * @var SiteCrawler\HtmlParser
-     */
-    protected $htmlParser;
-
-    public function __construct(Url $rootUrl, Client $httpClient, HtmlParser $htmlParser)
+    public function __construct(Url $rootUrl, Scraper $scraper)
     {
         $this->rootUrl = $rootUrl;
-        $this->httpClient = $httpClient;
-        $this->htmlParser = $htmlParser;
+        $this->scraper = $scraper;
     }
 
+    /**
+     * start crawling from the crawler's root URL and return all reachable URLs within the same domain
+     *
+     * @return array
+     */
     public function start()
     {
         $this->visitedUrls = [];
@@ -51,68 +49,51 @@ class Crawler
 
         $this->markForCrawling($this->rootUrl);
 
-        // $this->crawl(array_pop($this->urlsToVisit));
         $i = 1;
         while (count($this->urlsToVisit) > 0) {
             echo $i;
             $i++;
-            $this->crawl(array_pop($this->urlsToVisit));
+            $nextUrl = array_pop($this->urlsToVisit);
+            $this->scraper->scrape($this, $nextUrl);
         }
 
-        foreach ($this->visitedUrls as $visitedUrl) {
-            var_dump($visitedUrl->getUrl());
-        }
-        var_dump(count($this->visitedUrls));
-        // var_dump(count($this->urlsToVisit));
+        return array_values($this->visitedUrls);
     }
 
-    private function markForCrawling(Url $url)
+    /**
+     * adds the supplied URL to the queue of URLs which the crawler still has to visit
+     *
+     * @param  Url    $url
+     *
+     * @return null
+     */
+    public function markForCrawling(Url $url)
     {
         $this->urlsToVisit[$url->getUrl()] = $url;
     }
 
-    private function markVisited(Url $url)
+    /**
+     * marks a particular URL as being visited by the crawler
+     *
+     * @param  Url    $url
+     *
+     * @return null
+     */
+    public function markVisited(Url $url)
     {
-        $this->visitedUrls[$url->getUrl()] = $url;
+        $urlString = $url->getUrl();
+        $this->visitedUrls[$urlString] = $url;
+        echo "\t\t Visited {$urlString} \n";
     }
 
-    private function crawl(Url $url)
-    {
-        $html = $this->visit($url);
-        $this->markVisited($url);
-        echo "\t\t Visited {$url->getUrl()} \n";
-
-        $domCrawler = $this->htmlParser->makeDocument($url, $html);
-
-        $links = $this->htmlParser->getLinks($domCrawler);
-        foreach ($links as $link) {
-            if ($this->shouldBeVisited($link)) {
-                $this->markForCrawling($link);
-            }
-            $url->addLink($link);
-        }
-
-        $assets = $this->htmlParser->getAssets($domCrawler, $url);
-        foreach ($assets as $asset) {
-            $url->addAsset($asset);
-        }
-
-        return;
-    }
-
-    private function visit(Url $url)
-    {
-        $responseHtml = "";
-        try {
-            $response = $this->httpClient->get($url->getUrl());
-            $responseHtml = $response->getBody()->getContents();
-        } catch (\Exception $e) {
-
-        }
-        return $responseHtml;
-    }
-
-    private function shouldBeVisited(Url $url)
+    /**
+     * checks if the crawler should visit the specified URL
+     *
+     * @param  Url    $url
+     *
+     * @return boolean
+     */
+    public function shouldVisit(Url $url)
     {
         if (! $url->hasSameDomain($this->rootUrl)) {
             return false;
@@ -124,27 +105,10 @@ class Crawler
         if (! in_array($url->getScheme(), ["http", "https"])) {
             return false;
         }
-        if (! $this->linksToHtmlPage($url)) {
+        if (! $this->scraper->linksToHtmlPage($url)) {
             echo "{$url->getUrl()} does not link to an HTML page. \n";
             return false;
         }
         return true;
-    }
-
-    private function linksToHtmlPage(Url $url)
-    {
-        try {
-            $headResponse = $this->httpClient->head($url->getUrl());
-        } catch (\Exception $e) {
-            return false;
-        }
-        $contentTypeHeaders = $headResponse->getHeader("Content-Type");
-        foreach ($contentTypeHeaders as $headerValue) {
-            $isHtmlHeader = (strpos($headerValue, "text/html") === 0);
-            if ($isHtmlHeader) {
-                return true;
-            }
-        }
-        return false;
     }
 }
