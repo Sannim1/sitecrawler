@@ -50,10 +50,9 @@ class Crawler
         $this->markForCrawling($this->rootUrl);
 
         $i = 1;
-        while (count($this->urlsToVisit) > 0) {
+        while ($nextUrl = array_pop($this->urlsToVisit)) {
             echo $i;
             $i++;
-            $nextUrl = array_pop($this->urlsToVisit);
             $this->scraper->scrape($this, $nextUrl);
         }
 
@@ -99,14 +98,12 @@ class Crawler
             return false;
         }
         if (isset($this->visitedUrls[$url->getUrl()])) {
-            echo "{$url->getUrl()} has already been visited. \n";
             return false;
         }
         if (! in_array($url->getScheme(), ["http", "https"])) {
             return false;
         }
         if (! $this->scraper->linksToHtmlPage($url)) {
-            echo "{$url->getUrl()} does not link to an HTML page. \n";
             return false;
         }
         return true;
