@@ -94,7 +94,7 @@ class Url
      */
     public function getLinks()
     {
-        return $this->links;
+        return array_values($this->links);
     }
 
     /**
@@ -104,7 +104,7 @@ class Url
      */
     public function getAssets()
     {
-        return $this->assets;
+        return array_values($this->assets);
     }
 
     /**
@@ -114,12 +114,7 @@ class Url
      */
     public function addLink(Url $url)
     {
-        foreach ($this->links as $link) {
-            if ($link->getUrl() === $url->getUrl()) {
-                return;
-            }
-        }
-        $this->links[] = $url;
+        $this->links[$url->getUrl()] = $url;
         return;
     }
 
@@ -130,12 +125,7 @@ class Url
      */
     public function addAsset(Url $url)
     {
-        foreach ($this->assets as $asset) {
-            if ($asset->getUrl() === $url->getUrl()) {
-                return;
-            }
-        }
-        $this->assets[] = $url;
+        $this->assets[$url->getUrl()] = $url;
         return;
     }
 
