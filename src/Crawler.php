@@ -47,33 +47,52 @@ class Crawler
     public function start()
     {
         $this->visitedUrls = [];
-        $this->urlsToVisit = [$this->rootUrl];
+        $this->urlsToVisit = [];
 
+        $this->markForCrawling($this->rootUrl);
+
+        // $this->crawl(array_pop($this->urlsToVisit));
+        $i = 1;
         while (count($this->urlsToVisit) > 0) {
-            $this->crawl(array_shift($this->urlsToVisit));
+            echo $i;
+            $i++;
+            $this->crawl(array_pop($this->urlsToVisit));
         }
 
-        foreach ($this->visitedUrls as $visited) {
-            print_r($visited);
+        foreach ($this->visitedUrls as $visitedUrl) {
+            var_dump($visitedUrl->getUrl());
         }
+        var_dump(count($this->visitedUrls));
+        // var_dump(count($this->urlsToVisit));
+    }
+
+    private function markForCrawling(Url $url)
+    {
+        $this->urlsToVisit[$url->getUrl()] = $url;
+    }
+
+    private function markVisited(Url $url)
+    {
+        $this->visitedUrls[$url->getUrl()] = $url;
     }
 
     private function crawl(Url $url)
     {
         $html = $this->visit($url);
-        $this->visitedUrls[] = $url;
+        $this->markVisited($url);
+        echo "\t\t Visited {$url->getUrl()} \n";
 
-        $domDocument = $this->htmlParser->makeDocument($html);
+        $domCrawler = $this->htmlParser->makeDocument($url, $html);
 
-        $links = $this->htmlParser->getLinks($domDocument);
+        $links = $this->htmlParser->getLinks($domCrawler);
         foreach ($links as $link) {
             if ($this->shouldBeVisited($link)) {
-                $this->urlsToVisit[] = $link;
+                $this->markForCrawling($link);
             }
             $url->addLink($link);
         }
 
-        $assets = $this->htmlParser->getAssets($domDocument);
+        $assets = $this->htmlParser->getAssets($domCrawler, $url);
         foreach ($assets as $asset) {
             $url->addAsset($asset);
         }
@@ -87,8 +106,8 @@ class Crawler
         try {
             $response = $this->httpClient->get($url->getUrl());
             $responseHtml = $response->getBody()->getContents();
-        } catch (Exception $e) {
-            dd($e);
+        } catch (\Exception $e) {
+
         }
         return $responseHtml;
     }
@@ -98,11 +117,34 @@ class Crawler
         if (! $url->hasSameDomain($this->rootUrl)) {
             return false;
         }
-        foreach ($this->visitedUrls as $visitedUrl) {
-            if ($visitedUrl->getUrl() == $url->getUrl()) {
-                return false;
-            }
+        if (isset($this->visitedUrls[$url->getUrl()])) {
+            echo "{$url->getUrl()} has already been visited. \n";
+            return false;
+        }
+        if (! in_array($url->getScheme(), ["http", "https"])) {
+            return false;
+        }
+        if (! $this->linksToHtmlPage($url)) {
+            echo "{$url->getUrl()} does not link to an HTML page. \n";
+            return false;
         }
         return true;
+    }
+
+    private function linksToHtmlPage(Url $url)
+    {
+        try {
+            $headResponse = $this->httpClient->head($url->getUrl());
+        } catch (\Exception $e) {
+            return false;
+        }
+        $contentTypeHeaders = $headResponse->getHeader("Content-Type");
+        foreach ($contentTypeHeaders as $headerValue) {
+            $isHtmlHeader = (strpos($headerValue, "text/html") === 0);
+            if ($isHtmlHeader) {
+                return true;
+            }
+        }
+        return false;
     }
 }
