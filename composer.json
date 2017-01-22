@@ -2,7 +2,9 @@
     "name": "sannim1/sitecrawler",
     "description": "Utility for crawling and mapping a website",
     "require": {
-        "guzzlehttp/guzzle": "^6.2"
+        "guzzlehttp/guzzle": "^6.2",
+        "symfony/dom-crawler": "^3.2",
+        "symfony/css-selector": "^3.2"
     },
     "authors": [
         {
