@@ -80,22 +80,4 @@ class ScraperTest extends PHPUnit_Framework_TestCase
 
         $scraper->scrape($mockCrawler, $this->url);
     }
-
-    /**
-     * @test
-     */
-    public function it_checks_if_a_particular_url_links_to_an_html_page()
-    {
-        $mockHttpHandler = new MockHandler([
-            new Response(200, ["Content-Type" => "text/html"]),
-            new Response(200, []),
-            new ClientException('Not Found', new Request('GET', '/test')),
-        ]);
-        $httpClient = new Client(['handler' => $mockHttpHandler]);
-        $scraper = new Scraper($httpClient, $this->htmlParser);
-
-        $this->assertTrue($scraper->linksToHtmlPage($this->url));
-        $this->assertFalse($scraper->linksToHtmlPage($this->url));
-        $this->assertFalse($scraper->linksToHtmlPage($this->url));
-    }
 }

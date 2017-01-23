@@ -31,18 +31,10 @@ class Crawler
      */
     protected $scraper;
 
-    /**
-     * an object to create and persist a map of visited urls
-     *
-     * @var SiteCrawler\MapMaker
-     */
-    protected $mapMaker;
-
-    public function __construct(Url $rootUrl, Scraper $scraper, MapMaker $mapMaker)
+    public function __construct(Url $rootUrl, Scraper $scraper)
     {
         $this->rootUrl = $rootUrl;
         $this->scraper = $scraper;
-        $this->mapMaker = $mapMaker;
     }
 
     /**
@@ -59,14 +51,21 @@ class Crawler
 
         $i = 1;
         while ($nextUrl = array_pop($this->urlsToVisit)) {
-            $this->scraper->scrape($this, $nextUrl);
-            if (($i % 100) === 0) {
-                $this->mapMaker->createMap(array_values($this->visitedUrls));
-            }
             echo $i;
+            $this->scraper->scrape($this, $nextUrl);
             $i++;
         }
 
+        return;
+    }
+
+    /**
+     * returns an array of all the URLs already visited by the crawler
+     *
+     * @return array
+     */
+    public  function getVisitedUrls()
+    {
         return array_values($this->visitedUrls);
     }
 
@@ -112,9 +111,6 @@ class Crawler
             return false;
         }
         if (! in_array($url->getScheme(), ["http", "https"])) {
-            return false;
-        }
-        if (! $this->scraper->linksToHtmlPage($url)) {
             return false;
         }
         return true;

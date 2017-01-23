@@ -26,11 +26,11 @@ $htmlParser = new SiteCrawler\HtmlParser(
 $scraper = new SiteCrawler\Scraper($httpClient, $htmlParser);
 $mapMaker = new SiteCrawler\MapMaker($url);
 
-$crawler = new SiteCrawler\Crawler($url, $scraper, $mapMaker);
+$crawler = new SiteCrawler\Crawler($url, $scraper);
 
-$visitedUrls = $crawler->start();
+$crawler->start();
 
-$mapMaker->createMap($visitedUrls);
+$mapMaker->createMap($crawler->getVisitedUrls());
 
 $duration = time() - $startTime;
 echo "Duration: {$duration} seconds";

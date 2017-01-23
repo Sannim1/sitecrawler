@@ -77,28 +77,4 @@ class Scraper
         }
         return $responseHtml;
     }
-
-    /**
-     * checks if the supplied URL links to an HTML page
-     *
-     * @param  Url    $url
-     *
-     * @return boolean
-     */
-    public function linksToHtmlPage(Url $url)
-    {
-        try {
-            $headResponse = $this->httpClient->head($url->getUrl());
-        } catch (\Exception $e) {
-            return false;
-        }
-        $contentTypeHeaders = $headResponse->getHeader("Content-Type");
-        foreach ($contentTypeHeaders as $headerValue) {
-            $isHtmlHeader = (strpos($headerValue, "text/html") === 0);
-            if ($isHtmlHeader) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
