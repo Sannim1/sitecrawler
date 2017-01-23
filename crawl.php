@@ -24,12 +24,12 @@ $htmlParser = new SiteCrawler\HtmlParser(
 );
 
 $scraper = new SiteCrawler\Scraper($httpClient, $htmlParser);
-$mapMaker = new SiteCrawler\MapMaker($url);
 
 $crawler = new SiteCrawler\Crawler($url, $scraper);
 
 $crawler->start();
 
+$mapMaker = new SiteCrawler\Utils\MapMaker($url);
 $mapMaker->createMap($crawler->getVisitedUrls());
 
 $duration = time() - $startTime;

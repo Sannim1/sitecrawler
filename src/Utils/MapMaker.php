@@ -1,6 +1,6 @@
 <?php
 
-namespace SiteCrawler;
+namespace SiteCrawler\Utils;
 
 use SiteCrawler\Renderers\AssetMapRenderer;
 use SiteCrawler\Renderers\SiteMapRenderer;
