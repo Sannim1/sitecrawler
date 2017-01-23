@@ -88,19 +88,4 @@ class HtmlParser
             $this->getScripts($domCrawler)
         );
     }
-
-    // private function makeUrl(Url $parentUrl, $url)
-    // {
-    //     $scheme = parse_url($url, PHP_URL_SCHEME);
-    //     if (isset($scheme)) {
-    //         return $this->urlFactory->makeUrl($url);
-    //     }
-
-    //     if (strpos($url, "//") === 0) {
-    //         $scheme = $parentUrl->getScheme();
-    //         return $this->urlFactory->makeUrl("{$scheme}:{$url}");
-    //     }
-
-    //     return $this->urlFactory->makeUrlFromPath($parentUrl, $url);
-    // }
 }
