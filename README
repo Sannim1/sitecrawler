@@ -18,9 +18,9 @@ Execute the following script within your CLI making sure to replace `http://exam
 docker run --rm -it \
     -v $(pwd):/sitecrawler \
     sitecrawler/composer:latest \
-    php crawl.php http://example.com
+    php -d memory_limit=-1 crawl.php http://example.com
 ```
-The sitemap(consisting of the visited urls, links and assets) and assetmap(just urls and assets) can be found in the `sitemaps/{http://url_of_the_crawled_website}` directory
+The sitemap(consisting of the visited urls, links and assets) and assetmap(just urls and assets) can be found in the `sitemaps/{url_of_the_crawled_website}` directory
 
 METHOD 2 (Without Docker)
 
@@ -34,8 +34,9 @@ STEP 3 (only needs to be done once)
 Run `composer install` in order to install the dependencies required by this utility. When installation is done, run `composer dump-autoload`
 
 STEP 4
-Use the command `php crawl.php http://example.com` to start crawling the supplied URL. Make sure to replace `http://example.com` with a URL of your choosing.
-The sitemap(consisting of the visited urls, links and assets) and assetmap(just urls and assets) can be found in the `sitemaps/{http://url_of_the_crawled_website}` directory
+Use the command `php -d memory_limit=-1 crawl.php http://example.com` to start crawling from the supplied URL.
+Make sure to replace `http://example.com` with a URL of your choosing.
+The sitemap(consisting of the visited urls, links and assets) and assetmap(just urls and assets) can be found in the `sitemaps/{url_of_the_crawled_website}` directory
 
 Running Tests
 
